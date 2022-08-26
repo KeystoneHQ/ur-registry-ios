@@ -20,9 +20,15 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "URRegistry",
-            dependencies: []),
+            dependencies: ["URRegistryFFI"]
+        ),
+        .binaryTarget(
+            name: "URRegistryFFI",
+            path: "Library/URRegistryFFI.xcframework"
+        ),
         .testTarget(
             name: "URRegistryTests",
-            dependencies: ["URRegistry"]),
+            dependencies: ["URRegistry"]
+        ),
     ]
 )

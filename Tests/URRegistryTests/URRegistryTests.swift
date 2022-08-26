@@ -2,10 +2,10 @@ import XCTest
 @testable import URRegistry
 
 final class URRegistryTests: XCTestCase {
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(URRegistry().text, "Hello, World!")
+    func testURDecoderResult() {
+        let ur = "UR:CRYPTO-HDKEY/PTAOWKAXHDCLAOREGSNYCEIHDYCNQDPEPSIELYRTHFQZDWGYFPISFLTSUTUYCSDRVDREWSLYWDHHPDAAHDCXGMCTGAMNCKGATDWSEEOXEHHNGMSTFGSRCEJNJTWYGWBDZSJZDYLRLBINFWFGVWJPAHTAADEHOEADCSFNAOAEAMTAADDYOTADLNCSDWYKCSFNYKAEYKAOCYJOKBWEJZAXAXATTAADDYOEADLRAEWKLAWKAXAEAYCYGUBKLBMWASISGRIHKKJKJYJLJTIHBKJOHSIAIAJLKPJTJYDMJKJYHSJTIEHSJPIECLRECMSN"
+        let sut = URRegistry.shared
+        
+        sut.getHDKey(from: ur)
     }
 }
