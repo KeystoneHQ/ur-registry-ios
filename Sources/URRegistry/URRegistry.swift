@@ -30,11 +30,14 @@ public class URRegistry {
         let hdKeyPointer = UnsafeMutableRawPointer(mutating: hdKeyPtr)
                     
         let keyPtr = URRegistryFFI.crypto_hd_key_get_key_data(hdKeyPointer).pointee.value._string
+        let chainCodePtr = URRegistryFFI.crypto_hd_key_get_chain_code(hdKeyPointer).pointee.value._string
         
-        guard let keyPtr = keyPtr else { return nil }
+        guard let keyPtr = keyPtr, let chainCodePtr = chainCodePtr else { return nil }
         let key = String(cString: keyPtr)
+        let chainCode = String(cString: chainCodePtr)
         
         print("key: ", key)
-        return CryptoHDKey(key: key, chainCode: "")
+        print("chainCode: ", chainCode)
+        return CryptoHDKey(key: key, chainCode: chainCode)
     }
 }
