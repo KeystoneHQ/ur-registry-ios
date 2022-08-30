@@ -32,6 +32,8 @@ typedef struct Response *PtrResponse;
 
 PtrResponse crypto_hd_key_get_key_data(void *crypto_hdkey);
 
+PtrResponse crypto_hd_key_get_uncompressed_key_data(void *compressed_key);
+
 PtrResponse crypto_hd_key_get_chain_code(void *crypto_hdkey);
 
 PtrResponse crypto_hd_key_get_name(void *crypto_hdkey);

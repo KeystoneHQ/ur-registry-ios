@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CryptoHDKey {
+public struct CryptoHDKey: Equatable {
     public var key: String
     public var chainCode: String
 }

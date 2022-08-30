@@ -36,8 +36,14 @@ public class URRegistry {
         let key = String(cString: keyPtr)
         let chainCode = String(cString: chainCodePtr)
         
-        print("key: ", key)
-        print("chainCode: ", chainCode)
         return CryptoHDKey(key: key, chainCode: chainCode)
+    }
+    
+    public func getUncompressedKey(from compressedKey: String) -> String? {
+        let keyPointer = UnsafeMutableRawPointer(mutating: (compressedKey as NSString).utf8String)
+        let keyPtr = URRegistryFFI.crypto_hd_key_get_uncompressed_key_data(keyPointer).pointee.value._string
+        
+        guard let keyPtr = keyPtr else { return nil }
+        return String(cString: keyPtr)
     }
 }
