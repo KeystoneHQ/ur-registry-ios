@@ -31,12 +31,19 @@ public class URRegistry {
                     
         let keyPtr = URRegistryFFI.crypto_hd_key_get_key_data(hdKeyPointer).pointee.value._string
         let chainCodePtr = URRegistryFFI.crypto_hd_key_get_chain_code(hdKeyPointer).pointee.value._string
+        let sourceFingerprintPtr = URRegistryFFI.crypto_hd_key_get_source_fingerprint(hdKeyPointer).pointee.value._string
         
-        guard let keyPtr = keyPtr, let chainCodePtr = chainCodePtr else { return nil }
+        guard
+            let keyPtr = keyPtr,
+            let chainCodePtr = chainCodePtr,
+            let sourceFingerprintPtr = sourceFingerprintPtr
+        else { return nil }
+        
         let key = String(cString: keyPtr)
         let chainCode = String(cString: chainCodePtr)
+        let sourceFingerprint = String(cString: sourceFingerprintPtr)
         
-        return CryptoHDKey(key: key, chainCode: chainCode)
+        return CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint)
     }
     
     public func getUncompressedKey(from compressedKey: String) -> String? {
