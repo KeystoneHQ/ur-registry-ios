@@ -7,7 +7,7 @@ final class URRegistryTests: XCTestCase {
         let expectedResult = CryptoHDKey(
             key: "032f547fd525b6d83cc2c44f939cc1425fa1e98d97d26b00f9e2d04952933c5128",
             chainCode: "b92b17b393612fc8e945e5c5389439ca0c0a28c3076c060b15c3f9f6523a9d19",
-            sourceFingerprint: "52006ea0"
+            sourceFingerprint: 1375760032
         )
         
         let sut = URRegistry.shared
@@ -37,5 +37,25 @@ final class URRegistryTests: XCTestCase {
         let result = sut.getUncompressedKey(from: compressedKey)
         
         XCTAssertEqual(result, uncompressedKey)
+    }
+    
+    func testRequestSign() {
+        let signRequest = KeystoneSignRequest(
+            requestId: "44313244443830392d443131312d344239352d384439372d324244423137324632363332",
+            signData: "",
+            signType: .typedTransaction,
+            chainId: 4,
+            path: "m/44'/60'/0'/0/0",
+            xfp: 1375760032,
+            address: "307832636539633861393136303233623031633737306535356439393165446642313734663035384335",
+            origin: "gnosis safe ios"
+        )
+        let expectedResult = "ur:eth-sign-request/1-1/lpadadcsltcygejnwlgshdltosadtpdahddkfyeheyfyfyetdyesdpfyehehehdpeefwesecdpetfyesemdpeyfwfyfwehemeyfgeyeneoeyaofzaxaaaaaaahtaaddyoeadlecsdwykcsfnykaeykaewkaewkaocygmaejtnbamhddrdykseyiaihesiaethsesehendyeyeoiddyehiaememdyihececieesesehihfyiyfwehemeeiydyecetfxecatjliojtjljkinjkcxjkhsiyihcxinjljksahpwtmk"
+        
+        let sut = URRegistry.shared
+        
+        let result = sut.requestSign(signRequest: signRequest)
+        
+        XCTAssertEqual(result, expectedResult)
     }
 }
