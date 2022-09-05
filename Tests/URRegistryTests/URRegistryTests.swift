@@ -50,7 +50,7 @@ final class URRegistryTests: XCTestCase {
             address: "307832636539633861393136303233623031633737306535356439393165446642313734663035384335",
             origin: "gnosis safe ios"
         )
-        let expectedResult = "ur:eth-sign-request/1-1/lpadadcsltcygejnwlgshdltosadtpdahddkfyeheyfyfyetdyesdpfyehehehdpeefwesecdpetfyesemdpeyfwfyfwehemeyfgeyeneoeyaofzaxaaaaaaahtaaddyoeadlecsdwykcsfnykaeykaewkaewkaocygmaejtnbamhddrdykseyiaihesiaethsesehendyeyeoiddyehiaememdyihececieesesehihfyiyfwehemeeiydyecetfxecatjliojtjljkinjkcxjkhsiyihcxinjljksahpwtmk"
+        let expectedResult = "UR:ETH-SIGN-REQUEST/1-1/LPADADCSLTCYGEJNWLGSHDLTOSADTPDAHDDKFYEHEYFYFYETDYESDPFYEHEHEHDPEEFWESECDPETFYESEMDPEYFWFYFWEHEMEYFGEYENEOEYAOFZAXAAAAAAAHTAADDYOEADLECSDWYKCSFNYKAEYKAEWKAEWKAOCYGMAEJTNBAMHDDRDYKSEYIAIHESIAETHSESEHENDYEYEOIDDYEHIAEMEMDYIHECECIEESESEHIHFYIYFWEHEMEEIYDYECETFXECATJLIOJTJLJKINJKCXJKHSIYIHCXINJLJKSAHPWTMK"
         
         let sut = URRegistry.shared
         

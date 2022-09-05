@@ -80,6 +80,6 @@ public class URRegistry {
         
         guard let qrValuePtr = qrValuePtr else { return nil }
         
-        return String(cString: qrValuePtr)
+        return String(cString: qrValuePtr).uppercased()
     }
 }

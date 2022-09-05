@@ -25,4 +25,24 @@ public struct KeystoneSignRequest {
     public var xfp: UInt32
     public var address: HexString
     public var origin: String
+    
+    public init(
+        requestId: HexString,
+        signData: HexString,
+        signType: SignType,
+        chainId: UInt32,
+        path: String,
+        xfp: UInt32,
+        address: HexString,
+        origin: String
+    ) {
+        self.requestId = requestId
+        self.signData = signData
+        self.signType = signType
+        self.chainId = chainId
+        self.path = path
+        self.xfp = xfp
+        self.address = address
+        self.origin = origin
+    }
 }
