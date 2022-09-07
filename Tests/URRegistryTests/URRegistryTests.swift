@@ -39,7 +39,7 @@ final class URRegistryTests: XCTestCase {
         XCTAssertEqual(result, expectedResult)
     }
     
-    func testRequestSign() {
+    func testNextPartUnsignedUR() {
         let signRequest = KeystoneSignRequest(
             requestId: "44313244443830392d443131312d344239352d384439372d324244423137324632363332",
             signData: "",
@@ -54,7 +54,8 @@ final class URRegistryTests: XCTestCase {
         
         let sut = URRegistry.shared
         
-        let result = sut.requestSign(signRequest: signRequest)
+        sut.setSignRequestUREncoder(with: signRequest)
+        let result = sut.nextPartUnsignedUR
         
         XCTAssertEqual(result, expectedResult)
     }

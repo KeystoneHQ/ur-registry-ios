@@ -11,7 +11,18 @@ import URRegistryFFI
 public class URRegistry {
     public static let shared = URRegistry()
     
+    public var nextPartUnsignedUR: String? {
+        guard let urEncoderPointer = urEncoderPointer else { return nil }
+        
+        let qrValuePtr = URRegistryFFI.ur_encoder_next_part(urEncoderPointer).pointee.safeValue?._string
+        
+        guard let qrValuePtr = qrValuePtr else { return nil }
+        
+        return String(cString: qrValuePtr).uppercased()
+    }
+    
     private let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.value._object
+    private var urEncoderPointer: UnsafeMutableRawPointer?
     
     private init() {}
     
@@ -59,11 +70,10 @@ public class URRegistry {
         guard let keyPtr = keyPtr else { return nil }
         return String(cString: keyPtr)
     }
-        
-    /// Generate a QR code value which is a UR for hardware wallet to sign
+    
+    /// Get a sign request UR encoder and set it to urEncoderPointer for getting nextPartUnsignedUR
     /// - Parameter signRequest: A KeystoneSignRequest holding all of the required information
-    /// - Returns: An unsigned UR
-    public func requestSign(signRequest: KeystoneSignRequest) -> String? {
+    public func setSignRequestUREncoder(with signRequest: KeystoneSignRequest) {
         let requestIdPointer = UnsafeMutableRawPointer(mutating: (signRequest.requestId as NSString).utf8String)
         let signDataPointer = UnsafeMutableRawPointer(mutating: (signRequest.signData as NSString).utf8String)
         let pathPointer = UnsafeMutableRawPointer(mutating: (signRequest.path as NSString).utf8String)
@@ -80,16 +90,11 @@ public class URRegistry {
             addressPointer,
             originPointer
         )
-
+        
         let ethSignRequestPtr = ethSignRequest?.pointee.safeValue?._object
         let ethSignRequestPointer = UnsafeMutableRawPointer(mutating: ethSignRequestPtr)
         let urEncoderPtr = URRegistryFFI.eth_sign_request_get_ur_encoder(ethSignRequestPointer).pointee.safeValue?._object
-        let urEncoderPointer = UnsafeMutableRawPointer(mutating: urEncoderPtr)
-        let qrValuePtr = URRegistryFFI.ur_encoder_next_part(urEncoderPointer).pointee.safeValue?._string
-        
-        guard let qrValuePtr = qrValuePtr else { return nil }
-        
-        return String(cString: qrValuePtr).uppercased()
+        urEncoderPointer = UnsafeMutableRawPointer(mutating: urEncoderPtr)
     }
     
     /// Get signature information provided by a UR
