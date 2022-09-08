@@ -20,8 +20,7 @@ public class URRegistry {
         
         return String(cString: qrValuePtr).uppercased()
     }
-    
-    private let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.value._object
+        
     private var urEncoderPointer: UnsafeMutableRawPointer?
     
     private init() {}
@@ -30,6 +29,7 @@ public class URRegistry {
     /// - Parameter ur: An UR string
     /// - Returns: An instance of CryptoHDKey
     public func getHDKey(from ur: String) -> CryptoHDKey? {
+        let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.safeValue?._object
         let decoderPointer = UnsafeMutableRawPointer(mutating: decoderPtr)
         let urPointer = UnsafeMutableRawPointer(mutating: (ur as NSString).utf8String)
         let targetPointer = UnsafeMutableRawPointer(mutating: ("crypto-hdkey" as NSString).utf8String)
@@ -101,6 +101,7 @@ public class URRegistry {
     /// - Parameter ur: An UR string
     /// - Returns: The hex string of the signature
     public func getSignature(from ur: String) -> String? {
+        let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.safeValue?._object
         let decoderPointer = UnsafeMutableRawPointer(mutating: decoderPtr)
         let urPointer = UnsafeMutableRawPointer(mutating: (ur as NSString).utf8String)
         let targetPointer = UnsafeMutableRawPointer(mutating: ("eth-signature" as NSString).utf8String)
