@@ -46,18 +46,21 @@ public class URRegistry {
         let keyPtr = URRegistryFFI.crypto_hd_key_get_key_data(hdKeyPointer).pointee.safeValue?._string
         let chainCodePtr = URRegistryFFI.crypto_hd_key_get_chain_code(hdKeyPointer).pointee.safeValue?._string
         let sourceFingerprintPtr = URRegistryFFI.crypto_hd_key_get_source_fingerprint(hdKeyPointer).pointee.safeValue?._string
+        let notePtr = URRegistryFFI.crypto_hd_key_get_note(hdKeyPointer).pointee.safeValue?._string
         
         guard
             let keyPtr = keyPtr,
             let chainCodePtr = chainCodePtr,
             let sourceFingerprintPtr = sourceFingerprintPtr,
-            let sourceFingerprint = UInt32(String(cString: sourceFingerprintPtr), radix: 16)
+            let sourceFingerprint = UInt32(String(cString: sourceFingerprintPtr), radix: 16),
+            let notePtr = notePtr
         else { return nil }
         
         let key = String(cString: keyPtr)
         let chainCode = String(cString: chainCodePtr)
-        
-        return CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint)
+        let noteString = String(cString: notePtr)
+        let note = CryptoHDKey.Note(rawValue: noteString) ?? .standard
+        return CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint, note: note)
     }
     
     /// Uncompress public key
