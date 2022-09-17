@@ -21,16 +21,18 @@ public class URRegistry {
         return String(cString: qrValuePtr).uppercased()
     }
         
+    private var decoderPointer = UnsafeMutableRawPointer(mutating: URRegistryFFI.ur_decoder_new().pointee.safeValue?._object)
     private var urEncoderPointer: UnsafeMutableRawPointer?
     
     private init() {}
     
-    /// Get a CryptoHDKey instance provided by a UR
+    /// Get a parent CryptoHDKey instance provided by a UR, which can be used to derive public keys
     /// - Parameter ur: An UR string
     /// - Returns: An instance of CryptoHDKey
-    public func getHDKey(from ur: String) -> CryptoHDKey? {
-        let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.safeValue?._object
-        let decoderPointer = UnsafeMutableRawPointer(mutating: decoderPtr)
+    public func getSourceHDKey(from ur: String) -> CryptoHDKey? {
+        guard ur.starts(with: "UR:CRYPTO-HDKEY") else { return nil }
+        
+        let decoderPointer = UnsafeMutableRawPointer(mutating: URRegistryFFI.ur_decoder_new().pointee.safeValue?._object)
         let urPointer = UnsafeMutableRawPointer(mutating: (ur as NSString).utf8String)
         let targetPointer = UnsafeMutableRawPointer(mutating: ("crypto-hdkey" as NSString).utf8String)
         
@@ -61,6 +63,58 @@ public class URRegistry {
         let noteString = String(cString: notePtr)
         let note = CryptoHDKey.Note(rawValue: noteString) ?? .standard
         return CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint, note: note)
+    }
+    
+    /// Get a list of CryptoHDKey provided by a UR, they can not be used to derive key
+    /// - Parameter ur: An UR string
+    /// - Returns: A list of CryptoHDKey
+    public func getHDKeys(from ur: String) -> [CryptoHDKey]? {
+        guard ur.starts(with: "UR:CRYPTO-ACCOUNT") else { return nil }
+        
+        let urPointer = UnsafeMutableRawPointer(mutating: (ur as NSString).utf8String)
+        let targetPointer = UnsafeMutableRawPointer(mutating: ("crypto-account" as NSString).utf8String)
+        
+        URRegistryFFI.ur_decoder_receive(decoderPointer, urPointer)
+        
+        let isCompleted = URRegistryFFI.ur_decoder_is_complete(decoderPointer).pointee.safeValue?._boolean ?? false
+        
+        guard isCompleted else { return nil }
+        
+        let accountPtr = URRegistryFFI.ur_decoder_resolve(decoderPointer, targetPointer).pointee.safeValue?._object
+        let accountPointer = UnsafeMutableRawPointer(mutating: accountPtr)
+        
+        var hdKeyPtrs = [PtrVoid?]()
+        let length = URRegistryFFI.crypto_account_get_accounts_len(accountPointer).pointee.safeValue?._uint32 ?? 0
+        for index in 0..<length {
+            let outPutPtr = URRegistryFFI.crypto_account_get_account(accountPointer, index).pointee.safeValue?._object
+            let outPutPointer = UnsafeMutableRawPointer(mutating: outPutPtr)
+            let hdKeyPtr = URRegistryFFI.crypto_output_get_hd_key(outPutPointer).pointee.safeValue?._object
+            hdKeyPtrs.append(hdKeyPtr)
+        }
+        
+        var hdKeys = [CryptoHDKey]()
+        for hdKeyPtr in hdKeyPtrs {
+            let hdKeyPointer = UnsafeMutableRawPointer(mutating: hdKeyPtr)
+            
+            let keyPtr = URRegistryFFI.crypto_hd_key_get_key_data(hdKeyPointer).pointee.safeValue?._string
+            let sourceFingerprintPtr = URRegistryFFI.crypto_hd_key_get_source_fingerprint(hdKeyPointer).pointee.safeValue?._string
+            let notePtr = URRegistryFFI.crypto_hd_key_get_note(hdKeyPointer).pointee.safeValue?._string
+            
+            guard
+                let keyPtr = keyPtr,
+                let sourceFingerprintPtr = sourceFingerprintPtr,
+                let sourceFingerprint = UInt32(String(cString: sourceFingerprintPtr), radix: 16),
+                let notePtr = notePtr
+            else { continue }
+            
+            let key = String(cString: keyPtr)
+            let noteString = String(cString: notePtr)
+            let note = CryptoHDKey.Note(rawValue: noteString) ?? .standard
+            let hdKey = CryptoHDKey(key: key, chainCode: nil, sourceFingerprint: sourceFingerprint, note: note)
+            hdKeys.append(hdKey)
+        }
+        
+        return hdKeys
     }
     
     /// Uncompress public key
