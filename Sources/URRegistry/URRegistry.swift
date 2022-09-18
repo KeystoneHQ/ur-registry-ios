@@ -65,6 +65,11 @@ public class URRegistry {
         return CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint, note: note)
     }
     
+    /// Create a new decoder to clean the received UR on the current decoder. Please make sure to call this method after finishing a decoding process or before starting a new decoding task.
+    public func resetDecoder() {
+        decoderPointer = UnsafeMutableRawPointer(mutating: URRegistryFFI.ur_decoder_new().pointee.safeValue?._object)
+    }
+    
     /// Get a list of CryptoHDKey provided by a UR, they can not be used to derive key
     /// - Parameter ur: An UR string
     /// - Returns: A list of CryptoHDKey
