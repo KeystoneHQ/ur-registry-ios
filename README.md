@@ -4,31 +4,30 @@ A swift package of UR Registry. It is a wrapper of `URRegistryFFI` which is gene
 
 ## How to update the binary library `URRegistryFFI`
 
-1. Clone the rust repo.
+1. Install Rust
+https://www.rust-lang.org/learn/get-started
+
+2. Clone the rust repo.
 
 ```shell
 git clone https://github.com/KeystoneHQ/ur-registry-rust
-```
-
-2. Generate iOS static libraries, please install the dependent tools when needed.
-
-```shell
 cd ur-registry-rust
-
-make generate_ios
+git checkout support-eth
+git submodule update --init
 ```
 
-3. Make sure the header file `ur-registry-rust/include/URRegistryFFI/lib_ur_registry_ffi.h` is up to date.
-
-4. Generate `xcframework`.
+3. Install ios targets
 
 ```shell
-xcodebuild -create-xcframework \
-        -library "./target/aarch64-apple-ios/release/libur_registry_ffi.a" \
-        -headers "./include" \
-        -library "./target/x86_64-apple-ios/release/libur_registry_ffi.a" \
-        -headers "./include" \
-        -output "./URRegistryFFI.xcframework"
+rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
 ```
 
-5. Replace the `URRegistryFFI.xcframework` in `URRegistry/Library`.
+4. Generate XCFramework
+
+Make sure the header file `ur-registry-rust/include/URRegistryFFI/lib_ur_registry_ffi.h` is up to date.
+
+```shell
+make generate_xcframework
+```
+
+5. Replace the `URRegistryFFI.xcframework` in `URRegistry/Library` from the `target` build folder
