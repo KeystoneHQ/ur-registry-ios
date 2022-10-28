@@ -162,7 +162,7 @@ public class URRegistry {
     /// Get signature information provided by a UR
     /// - Parameter ur: An UR string
     /// - Returns: The hex string of the signature
-    public func getSignature(from ur: String) -> String? {
+    public func getSignature(from ur: String) -> KeystoneSignature? {
         let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.safeValue?._object
         let decoderPointer = UnsafeMutableRawPointer(mutating: decoderPtr)
         let urPointer = UnsafeMutableRawPointer(mutating: (ur as NSString).utf8String)
@@ -178,14 +178,17 @@ public class URRegistry {
         let ethSignaturePtrPointer = UnsafeMutableRawPointer(mutating: ethSignaturePtr)
         
         let signaturePtr = URRegistryFFI.eth_signature_get_signature(ethSignaturePtrPointer).pointee.safeValue?._string
+        let requestIdPtr = URRegistryFFI.eth_signature_get_request_id(ethSignaturePtrPointer).pointee.safeValue?._string
         
         guard
-            let signaturePtr = signaturePtr
+            let signaturePtr = signaturePtr,
+            let requestIdPtr = requestIdPtr
         else { return nil }
         
         let signature = String(cString: signaturePtr)
+        let requestId = String(cString: requestIdPtr)
         
-        return signature
+        return KeystoneSignature(requestId: requestId, signature: signature)
     }
 }
 
