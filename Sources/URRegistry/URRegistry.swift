@@ -11,6 +11,8 @@ import URRegistryFFI
 public class URRegistry {
     public static let shared = URRegistry()
     
+    /// Get the next part of unsigned UR, it can be called repeatedly to generate a dynamic UR code
+    /// Method `setSignRequestUREncoder` should be called properly before you can get an unsigned UR
     public var nextPartUnsignedUR: String? {
         guard let urEncoderPointer = urEncoderPointer else { return nil }
         
@@ -161,7 +163,7 @@ public class URRegistry {
     
     /// Get signature information provided by a UR
     /// - Parameter ur: An UR string
-    /// - Returns: The hex string of the signature
+    /// - Returns: An instance of KeystoneSignature which include requestId and signature
     public func getSignature(from ur: String) -> KeystoneSignature? {
         let decoderPtr = URRegistryFFI.ur_decoder_new().pointee.safeValue?._object
         let decoderPointer = UnsafeMutableRawPointer(mutating: decoderPtr)
