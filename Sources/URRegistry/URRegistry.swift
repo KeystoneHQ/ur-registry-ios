@@ -20,7 +20,9 @@ public class URRegistry {
         
         guard let qrValuePtr = qrValuePtr else { return nil }
         
-        return String(cString: qrValuePtr).uppercased()
+        let qrValue = String(cString: qrValuePtr).uppercased()
+        URRegistryFFI.utils_free(qrValuePtr)
+        return qrValue
     }
         
     private var decoderPointer = UnsafeMutableRawPointer(mutating: URRegistryFFI.ur_decoder_new().pointee.safeValue?._object)
@@ -28,6 +30,15 @@ public class URRegistry {
     
     private init() {}
     
+    deinit {
+        if let decoderPtr = decoderPointer {
+            URRegistryFFI.utils_free(decoderPtr)
+        }
+        if let encoderPtr = urEncoderPointer {
+            URRegistryFFI.utils_free(encoderPtr)
+        }
+    }
+
     /// Get a parent CryptoHDKey instance provided by a UR, which can be used to derive public keys
     /// - Parameter ur: An UR string
     /// - Returns: An instance of CryptoHDKey
@@ -58,13 +69,28 @@ public class URRegistry {
             let sourceFingerprintPtr = sourceFingerprintPtr,
             let sourceFingerprint = UInt32(String(cString: sourceFingerprintPtr), radix: 16),
             let notePtr = notePtr
-        else { return nil }
+        else {
+            URRegistryFFI.utils_free(hdKeyPtr)
+            URRegistryFFI.utils_free(keyPtr)
+            URRegistryFFI.utils_free(chainCodePtr)
+            URRegistryFFI.utils_free(sourceFingerprintPtr)
+            URRegistryFFI.utils_free(notePtr)
+            return nil
+        }
         
         let key = String(cString: keyPtr)
         let chainCode = String(cString: chainCodePtr)
         let noteString = String(cString: notePtr)
         let note = CryptoHDKey.Note(rawValue: noteString) ?? .standard
-        return CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint, note: note)
+        let hdKey = CryptoHDKey(key: key, chainCode: chainCode, sourceFingerprint: sourceFingerprint, note: note)
+
+        URRegistryFFI.utils_free(hdKeyPtr)
+        URRegistryFFI.utils_free(keyPtr)
+        URRegistryFFI.utils_free(chainCodePtr)
+        URRegistryFFI.utils_free(sourceFingerprintPtr)
+        URRegistryFFI.utils_free(notePtr)
+
+        return hdKey
     }
     
     /// Create a new decoder to clean the received UR on the current decoder. Please make sure to call this method after finishing a decoding process or before starting a new decoding task.
@@ -112,12 +138,21 @@ public class URRegistry {
                 let sourceFingerprintPtr = sourceFingerprintPtr,
                 let sourceFingerprint = UInt32(String(cString: sourceFingerprintPtr), radix: 16),
                 let notePtr = notePtr
-            else { continue }
-            
+            else {
+                URRegistryFFI.utils_free(keyPtr)
+                URRegistryFFI.utils_free(sourceFingerprintPtr)
+                URRegistryFFI.utils_free(notePtr)
+                continue
+            }
+
             let key = String(cString: keyPtr)
             let noteString = String(cString: notePtr)
             let note = CryptoHDKey.Note(rawValue: noteString) ?? .standard
             let hdKey = CryptoHDKey(key: key, chainCode: nil, sourceFingerprint: sourceFingerprint, note: note)
+            URRegistryFFI.utils_free(keyPtr)
+            URRegistryFFI.utils_free(sourceFingerprintPtr)
+            URRegistryFFI.utils_free(notePtr)
+            URRegistryFFI.utils_free(hdKeyPtr)
             hdKeys.append(hdKey)
         }
         
@@ -131,8 +166,13 @@ public class URRegistry {
         let keyPointer = UnsafeMutableRawPointer(mutating: (compressedKey as NSString).utf8String)
         let keyPtr = URRegistryFFI.crypto_hd_key_get_uncompressed_key_data(keyPointer).pointee.safeValue?._string
         
-        guard let keyPtr = keyPtr else { return nil }
-        return String(cString: keyPtr)
+        guard let keyPtr = keyPtr else {
+            URRegistryFFI.utils_free(keyPtr)
+            return nil
+        }
+        let keyValue = String(cString: keyPtr)
+        URRegistryFFI.utils_free(keyPtr)
+        return keyValue
     }
     
     /// Get a sign request UR encoder and set it to urEncoderPointer for getting nextPartUnsignedUR
@@ -159,6 +199,8 @@ public class URRegistry {
         let ethSignRequestPointer = UnsafeMutableRawPointer(mutating: ethSignRequestPtr)
         let urEncoderPtr = URRegistryFFI.eth_sign_request_get_ur_encoder(ethSignRequestPointer).pointee.safeValue?._object
         urEncoderPointer = UnsafeMutableRawPointer(mutating: urEncoderPtr)
+
+        URRegistryFFI.utils_free(ethSignRequestPtr)
     }
     
     /// Get signature information provided by a UR
@@ -185,11 +227,20 @@ public class URRegistry {
         guard
             let signaturePtr = signaturePtr,
             let requestIdPtr = requestIdPtr
-        else { return nil }
+        else {
+            URRegistryFFI.utils_free(ethSignaturePtr)
+            URRegistryFFI.utils_free(decoderPointer)
+            return nil
+        }
         
         let signature = String(cString: signaturePtr)
         let requestId = String(cString: requestIdPtr)
         
+        URRegistryFFI.utils_free(signaturePtr)
+        URRegistryFFI.utils_free(requestIdPtr)
+        URRegistryFFI.utils_free(ethSignaturePtr)
+        URRegistryFFI.utils_free(decoderPointer)
+
         return KeystoneSignature(requestId: requestId, signature: signature)
     }
 }
